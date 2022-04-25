@@ -1,0 +1,232 @@
+Nombre y Ap: Fernando Parra.
+DNI: 41253880
+L.U: 618/19
+Turno Tarde.
+
+TAD Oyente es String
+TAD Artista es String
+TAD Cancion es String
+
+TAD Estopifail
+	Géneros: app
+	Exporta: app, observadores, generadores, rankingArtistasSeguidores, rankingArtistasReproducciones
+	Usa: Bool, Nat, etc....
+	Igualdad Observacional:	(∀a₀,a₁: app)
+	      						(a₀ =obs a₁ ⇐⇒
+												( oyentes(a₀) =obs oyentes(a₁) ∧
+													repertorio(a₀) =obs repertorio(a₁) ∧
+													(∀o:oyente)(o ∈ oyentes(a₀) ⇒L
+															playlist(a₀, o) =obs playlist(a₁, o) ∧
+															favoritos(a₀, o) =obs favoritos(a₁, o) ∧
+															(∀art:artista)(a ∈ claves(repertorio(a₀))) ⇒L
+															 		(∃c:cancion)(c = obtener(a, repertorio(a₀))) ∧L
+																		 #reproducciones(a₀, o, art, c) = #reproducciones(a₁, o, art, c)
+															)
+													)
+								);
+	
+	Observadores Básicos:
+		oyentes: app a -> conj(oyente)
+		repertorio: app a -> dicc(artista, conj(cancion))
+		playlist: app a × oyente o -> conj(cancion)
+		favoritos: app a × oyente o -> conj(artista)
+		#reproducciones: app a × oyente o × artista art × cancion c -> nat	{o ∈ oyentes(a) ∧ def?(art, repertorio(a))}
+		
+	Generadores:
+		crearApp: -> app
+		registrarOyente: app a × oyente o -> app												 		{o ∉ oyentes(a)}
+		registrarArtista: app a × artista art -> app										 		{¬def?(art, repertorio(a))}
+		subirCancion: app a × artista art × cancion c -> app     				 		{def?(art, repertorio(a)) ∧L c ∉ obtener(art, repertorio(a))}
+		escucharCancion: app a × oyente o × artista art × cancion c -> app 	
+																											 {o ∈ oyentes(a) ∧ def?(art, repertorio(a)) ∧L c ∈ obtener(art, repertorio(a))}
+		indicarFavorito: app a × oyente o × artista art -> app							{o ∈ oyentes(a) ∧ def?(art, repertorio(a))}
+		
+	Otras Operaciones:
+		#reproduccionesArtista: app a × oyente o × artista art -> nat       {o ∈ oyentes(a)}
+		cancionesEscuchadas: app a × oyente o × artista art -> conj(cancion){o ∈ oyentes(a)}
+		//---
+		damePlaylist: app a × conj(artista) favs -> conj(cancion)
+		juntarCanciones: app a × conj(artista) -> conj(cancion)
+		dameTemas: conj(cancion) cc × nat cantMax -> conj(cancion) 
+		//----
+		rankingArtistasSeguidores: app a -> secu(artista)														{¬Ø(claves(repertorio(a))}
+		rankingArtistasReproducciones: app a -> secu(artista)												{¬Ø(claves(repertorio(a))}
+		#seguidoresTotales: app a × conj(oyente) co × artista art -> nat
+		#reproduccionesTotales: app a × conj(oyente) co × artista art -> nat
+		dameMenosSeguidores: app a × conj(artista) ca × artista min -> artista
+		dameMenosReproducciones: app a × conj(artista) ca × artista min -> artista
+		
+	Axiomas:
+		oyentes(crearApp()) ≡ Ø
+		oyentes(registrarOyente(a, o)) ≡ Ag(o, oyentes(a))
+		oyentes(registrarArtista(a, art)) ≡ oyentes(a)
+		oyentes(subirCancion(a, art, c)) ≡ oyentes(a)
+		oyentes(escucharCancion(a, o, art, c)) ≡ oyentes(a)
+		oyentes(indicarFavorito(a, o, art)) ≡ oyentes(a)
+		
+		repertorio(crearApp()) ≡ Ø
+		repertorio(registrarOyente(a, o)) ≡ repertorio(a)
+		repertorio(registrarArtista(a, art)) ≡ definir(art, Ø, repertorio(a))
+		repertorio(subirCancion(a, art, c)) ≡ definir(art, Ag(c, obtener(art, repertorio(a)), repertorio(a)))
+		//Asumí que definir un diccionario sobre una clave ya definida, sobreescribe el significado de la clave, sin la necesidad de borrarla.
+		repertorio(escucharCancion(a, o, art, c)) ≡ repertorio(a)
+		repertorio(indicarFavorito(a, o, art)) ≡ repertorio(a)
+		
+		playlist(registrarOyente(a, o), o') ≡ if o = o' then
+																							Ø
+																					else
+																							playlist(a, o')
+																					fi
+		playlist(registrarArtista(a, art), o) ≡ playlist(a, o)
+		playlist(subirCancion(a, art, c), o) ≡ playlist(a, o)
+		playlist(escucharCancion(a, o, art, c), o') ≡ if o = o' then
+																											if #reproduccionesArtista(a, o, art) = 9 then
+																													damePlaylist(Ag(art, favoritos(a, o)))
+																											else
+																													playlist(a, o)
+																											fi
+																									else
+																											playlist(a, o')
+																									fi
+		//actualizo playlist si repr de un artista a es > 9, pues obtenemos nuevo favorito
+		playlist(indicarFavorito(a, o, art), o') ≡ damePlaylist(favoritos(a, o))
+		
+		favoritos(registrarOyente(a, o), o') ≡ if o = o' then
+																							Ø
+																					 else
+																							favoritos(a, o')
+																					 fi
+		favoritos(registrarArtista(a, art), o) ≡ favoritos(a, o)
+		favoritos(subirCancion(a, art, c), o) ≡ favoritos(a, o)
+		favoritos(escucharCancion(a, o, art, c), o') ≡ if o = o' then
+																											if #reproduccionesArtista(a, o, art) = 0 then
+																												Ag(art, favoritos(a, o))
+																											else
+																												favoritos(a, o)
+																											fi
+																									 else
+																											favoritos(a, o')
+																									 fi
+		favoritos(indicarFavorito(a, o, art), o') ≡ if o = o' then
+																									Ag(art, favoritos(a, o))
+																								else
+																									favoritos(a, o')
+																								fi
+		
+		#reproducciones(registrarOyente(a, o), o', art, c) ≡ #reproducciones(a, o', art, c)
+		#reproducciones(registrarArtista(a, art), o, art', c) ≡ #reproducciones(a, o, art', c)
+		#reproducciones(subirCancion(a, art, c), o, art', c') ≡ if art = art' then
+																															if c = c' then
+																																0
+																															else
+																																#reproducciones(a, o, art, c')
+																															fi
+																														else
+																															#reproducciones(a, o, art', c')
+																														fi
+		#reproducciones(escucharCancion(a, o, art, c), o', art', c') ≡ if o = o' then
+																																		if art = art' then
+																																				if c = c' then
+																																					#reproducciones(a, o, art, c) + 1
+																																				else
+																																					#reproducciones(a, o, art, c')
+																																				fi
+																																		else
+																																			#reproducciones(a, o, art', c')
+																																		fi
+																																	else
+																																		#reproducciones(a, o', art', c')
+																																	fi
+
+		#reproduccionesArtista(a, o, art) = #(cancionesEscuchadas(a, o, art)) 
+																																
+		cancionesEscuchadas(registrarOyente(a, o), o', art) ≡ cancionesEscuchadas(a, o', art)
+		cancionesEscuchadas(registrarArtista(a, art), o, art') ≡ if art = art' then
+																																	Ø
+																														 else
+																																	cancionesEscuchadas(a, art')
+																														fi
+		cancionesEscuchadas(subirCancion(a, art, c), o, art') ≡ cancionesEscuchadas(a, o, art')
+		cancionesEscuchadas(escucharCancion(a, o, art, c), o', art') ≡ if o = o' then
+																																			 if art = art' then
+																																					Ag(c, cancionesEscuchadas(a, o, art))
+																																			 else
+																																				  cancionesEscuchadas(a, o, art')
+																																			fi
+																																		else
+																																			cancionesEscuchadas(a, o', art')
+																																		fi
+																														
+		
+		
+		
+		
+		damePlaylist(a, cf) ≡ dameTemas(juntarCanciones(a, cf), 20)
+		juntarCanciones(a, cf) ≡ if Ø?(cf) then
+																Ø
+														 else
+														  	obtener(dameUno(cf), repertorio(a)) ∪ juntarCanciones(a, sinUno(cf))
+														 fi
+		dameTemas(cc, max) ≡ if max = 0 then
+													 Ø
+												 else
+													 if ¬Ø?(cc) then
+													  	Ag(dameUno(cc), dameTemas(sinUno(cc), max-1))
+													 else
+															Ø
+													 fi
+												fi																			
+		#seguidoresTotales(a, co, art) ≡ if Ø?(co) then
+																			0
+																		else
+																			if art ∈ favoritos(dameUno(co))) then
+																				1 + #seguidoresTotales(a, sinUno(co), art)
+																			else
+																				#seguidoresTotales(a, sinUno(co), art)
+																			fi
+																		fi
+		#reproduccionesTotales(a, co, art) ≡ if Ø?(co) then
+																					0
+																				else
+																					#reproduccionesArtista(a, dameUno((co)), art) + #reproduccionesTotales(a, sinUno(co), art)
+																				fi
+												
+		dameMenosSeguidores(a, ca, min) ≡ if Ø?(ca) then
+																				min
+																			else
+																				if #seguidoresTotales(a, oyentes(a), dameUno(ca)) < #seguidoresTotales(a, oyentes(a), min) then
+																					dameMenosSeguidores(a, oyentes(a), dameUno(ca))
+																				else
+																					dameMenosSeguidores(a, oyentes(a), min)
+																				fi
+																			fi
+		
+		dameMenosReproducciones(a, ca, min) ≡ if Ø?(ca) then
+																						min
+																					else
+																						if #reproduccionesTotales(a, oyentes(a), dameUno(ca)) < #reproduccionesTotales(a, oyentes(a), min) then
+																							dameMenosReproducciones(a, oyentes(a), dameUno(ca))
+																						else
+																							dameMenosReproducciones(a, oyentes(a), min)
+																						fi
+																					fi
+					
+					
+		juntarRankingSeguidores(a, ca) ≡ if Ø?(ca) then
+																			<>
+																		else
+																			dameMenosSeguidores(a, sinUno(claves(repertorio(a))), dameUno(claves(repertorio(a)))) • 
+																			juntarRankingSeguidores(a, ca - {dameMenosSeguidores(a, sinUno(claves(repertorio(a))), dameUno(claves(repertorio(a))))})
+																		fi 								
+		
+		juntarRankingReproducciones(a, ca) ≡  if Ø?(ca) then
+																						<>
+																					else
+																						dameMenosReproducciones(a, sinUno(claves(repertorio(a))), dameUno(claves(repertorio(a)))) • 
+																						juntarRankingReproducciones(a, ca - {dameMenosReproducciones(a, sinUno(claves(repertorio(a))), dameUno(claves(repertorio(a))))})
+																					fi 								
+		
+		rankingArtistasSeguidores(a) ≡ juntarRankingSeguidores(a, claves(repertorio(a)))
+		rankingArtistasReproducciones(a) ≡ juntarRankingReproducciones(a, claves(repertorio(a)))
+		
+Fin TAD

@@ -1,0 +1,45 @@
+TAD Direccion es ENUM{ARRIBA, ABAJO, IZQ, DER}
+
+TAD Jugador
+	Géneros: jugador
+	Exporta: jugador, observadores, generadores, 
+	Usa: Bool, Nat, Mapa, Coordenada(α,β), Direccion
+	
+	Igualdad Observacional:	(∀j₀,j₁: jugador)
+	      						(j₀ =obs j₁ ⇐⇒
+											( mapa(j₀) =obs mapa(j₁) ∧
+											  posicion(j₀) =obs mapa(j₁) 
+											)
+								);
+						
+	Observadores Básicos:
+		mapa: jugador j -> mapa
+		posicion: jugador j -> coordenada
+	Generadores:
+		crearJugador:	mapa m -> jugador
+		moverJugador: jugador j × direccion dir -> jugador
+	Otras Operaciones:
+		proximaCoordenada: jugador j × direccion dir -> coordenada
+	Axiomas:
+		mapa(crearJugador(m)) ≡ m
+		mapa(moverJugador(j,dir)) ≡ mapa(j)
+		posicion(crearJugador(m))	≡ inicio(mapa(j))
+		posicion(moverJugador(j,dir)) ≡ if esPared?(mapa(j), proximaCoordenada(j,dir)) then
+																			posicion(j)
+																		else
+																			proximaCoordenada(j,dir)
+																		fi
+		proximaCoordenada(j, dir) ≡ if dir = "ARRIBA" then
+																	arriba(posicion(j))
+																else
+																	if dir = "ABAJO" then
+																		abajo(posicion(j))
+																	else
+																		if dir = "IZQ" then
+																			izquierda(posicion(j))
+																		else
+																			derecha(posicion(j))
+																		fi
+																	fi
+																fi
+Fin TAD

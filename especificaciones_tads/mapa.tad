@@ -1,0 +1,47 @@
+//en la seccion Usa, se especifican el genero de los parametros? (y que pasa si usamos muchos y no habia q usar parametros?)
+
+//extension de TADs y su respectivo genero
+//lo mismo con TAD x ES y, no respetamos el genero
+
+//extencion de TAD y un subset del genero extendido
+
+TAD Pared ES Coordenada(nat,nat)
+
+TAD Mapa
+	Géneros: mapa
+	Exporta: mapa, observadores, generadores, 
+	Usa: Bool, Nat, Coordenada(α,β), Conjunto(α)
+	
+	Igualdad Observacional:	(∀m₀,m₁: mapa)
+	      										(m₀ =obs m₁ ⇐⇒
+															( alto(m₀) =obs alto(m₁) ∧
+															  largo(m₀) =obs largo(m₁) ∧
+																inicio(m₀) =obs inicio(m₁) ∧
+																paredes(m₀) =obs paredes(m₁)
+															)
+														);
+	
+	Observadores Básicos:
+		alto: mapa m -> nat
+		largo: mapa m -> nat
+		inicio: mapa m -> coordenada
+		paredes: mapa m -> conj(Pared)
+		
+	Generadores:
+		crearMapa: nat alto × nat largo × coordenada inicio × conj(Pared) cp -> mapa 
+					 {(∀p : pared)(p ∈ cp) ⇒L inBounds(a, l, p) ∧ inBounds(a, l, inicio)}
+		 
+	Otras Operaciones:
+		inBounds:	nat alto × nat largo × coordenada c -> bool
+		esPared?: mapa m × coordenada c -> bool
+		
+	Axiomas:
+		alto(crearMapa(a,l,i,cp)) ≡ a
+		largo(crearMapa(a,l,i,cp)) ≡ l
+		inicio(crearMapa(a,l,i,cp) ≡ i
+		paredes(crearMapa(a,l,i,cp)) ≡ cp
+		
+		inBounds(a, l, c) ≡ 0 ≤ π₁(c) ∧ π₁(c) < a ∧ 0 ≤ π₂(c) ∧ π₂(c) < l
+		esPared?(m, c) ≡ c ∈ paredes(m)
+		
+Fin TAD

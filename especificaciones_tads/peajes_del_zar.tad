@@ -1,0 +1,130 @@
+TAD Cabina es NAT
+TAD Vehiculo es String
+TAD dataPrecios es Dicc(Vehiculo, Nat)
+
+TAD PDZ
+	Géneros: pdz
+	Exporta: pdz, observadores, generadores, cabinasConMasVehiculosX
+	Usa: Bool, Nat, Conjunto(α), Multiconjunto(α), Diccionario(α, β), Cola(α)
+	
+	Igualdad Observacional:	(∀p₀,p₁: pdz)
+	      										(p₀ =obs p₁ ⇐⇒
+															(cabinas(p₀) =obs cabinas(p₁) ∧ 
+															 precios(p₀) =obs precios(p₁) ∧
+															 maximo(p₀)  =obs maximo(p₁) ∧
+															 (∀c:cabina)(c ∈ cabinas(p₀) ∧L
+															 		colaActual(p₀, c) =obs colaActual(p₁, c) ∧
+																	facturado(p₀, c) =obs facturado(p₁, c) ∧
+																	historialCola(p₀, c) =obs historialCola(p₁, c)
+															 )
+															)
+														);
+	Observadores Básicos:
+		cabinas: pdz -> conj(cabina)
+		precios: pdz -> dataPrecios
+		maximo: pdz -> nat
+		colaActual: pdz p × cabina c -> cola(vehiculo) 							{c ∈ cabinas(p)}
+		facturado: pdz p × cabina c -> nat 													{c ∈ cabinas(p)}
+		historialCola: pdz p × cabina c -> multiconj(vehiculo) 			{c ∈ cabinas(p)}
+	Generadores:
+		crearPDZ: conj(cabina) cc × nat maxEnCabina × dataPrecios dp -> pdz 	{¬Ø?(cc) ∧ 0 < maxEnCabina ∧ ¬Ø?(claves(dp))}
+		llegarCabina: pdz p × cabina c × vehiculo v -> pdz 										{c ∈ cabinas(p) ∧ v ∈ claves(precios(p))}
+		atenderCabina: pdz p × cabina c -> pdz 																{c ∈ cabinas(p) ∧ ¬vacia?(colaActual(p, c))}
+	Otras Operaciones:
+		cabinasConMasVehiculosX: pdz p × vehiculo v -> conj(cabina) 				  {v ∈ claves(precios(p))}
+		//devuelve la/s cabinas que encolaron mas vehiculos X
+		conjuntoDeMulticonjuntos: pdz p × conj(cabina) -> conj(multiconj(vehiculo))
+		//devuelve el conjunto con todos los historiales de vehiculos de cada cabina
+		maxVehiculosX: pdz p × vehiculo v × nat zero -> nat
+		//maximo num de vehiculos X en todas las cabinas
+		cabinasConXVehiculosY: pdz p × nat cant × vehiculo v -> conj(cabina)
+		//conjunto de las cabinas que contienen exactamente "cant" vehiculos en 
+		mitadFinal: cola(vehiculo) orig -> cola(vehiculo)
+		reducir: cola(α) c × nat ini × nat fin -> cola(α)
+		//reduce a la parte entera de (tamaño(cola) / 2)
+	Axiomas:
+		cabinas(crearPDZ(cc, max, dp)) ≡ cc
+		cabinas(llegarCabina(p, c, v)) ≡ cabinas(p)
+		cabinas(atenderCabina(p, c))   ≡ cabinas(p)
+		
+		precios(crearPDZ(cc, max, dp)) ≡ dp
+		precios(llegarCabina(p, c, v)) ≡ precios(p)
+		precios(atenderCabina(p, c))   ≡ precios(p)
+		
+		maximo(crearPDZ(cc, max, dp))  ≡ max
+		maximo(llegarCabina(p, c, v))  ≡ maximo(p)
+		maximo(atenderCabina(p, c))    ≡ maximo(p)
+		
+		colaActual(crearPDZ(cc, max, dp), c) ≡ vacía
+		colaActual(llegarCabina(p,c,v), c')  ≡ if tamaño(colaActual(p, c)) + 1 > maximo(p) then
+																						if c = c' then
+																							mitadFinal(encolar(v, colaActual(p, c)))
+																					 	else
+																							mitadFinal(colaActual(p, c'))
+																					 	fi
+																					else
+																					 	if c = c' then
+																		 					encolar(v, colaActual(p, c))
+																		 				else
+																		 					colaActual(p, c')
+																		 				fi
+																					fi
+		colaActual(atenderCabina(p, c), c') ≡ if c = c' then
+																						desencolar(colaActual(p, c))
+																					else
+																						colaActual(p, c')
+																					fi
+																					
+		facturado(crearPDZ(cc, max, dp), c) ≡ 0 
+		facturado(llegarCabina(p,c,v), c')  ≡ facturado(p, c')
+		facturado(atenderCabina(p, c), c')  ≡ if c = c' then
+																						obtener(proximo(colaActual(p, c')), precios(p))
+																					else
+																						0
+																					fi + facturado(p, c') 
+		
+		historialCola(crearPDZ(cc, max, dp), c') ≡ Ø
+		historialCola(llegarCabina(p,c,v), c') ≡ if c = c' then
+																							Ag(v, historialCola(p, c'))
+																						 else
+																						 	 historialCola(p, c')
+																						 fi
+		historialCola(atenderCabina(p,c), c') ≡ historialCola(p, c')
+		
+		cabinasConMasVehiculosX(p, v) ≡ cabinasConXVehiculosY(p, cabinas(p), v, maxVehiculosX(conjuntoDeMulticonjuntos(p, cabinas(p)), v, 0), v)
+		
+		conjuntoDeMulticonjuntos(p, cc) ≡ if Ø?(cc) then
+																				Ø
+																	 		else
+																	 			Ag(historialCola(p, dameUno(cc)), conjuntoDeMulticonjuntos(p, sinUno(cc)))
+																	 		fi
+		
+		maxVehiculosX(cm, v, n) ≡ if Ø?(cm) then
+																n
+													 		else
+												 				if #(v, dameUno(cm)) > n then
+												 					maxVehiculosX(sinUno(cc), v, #(v, dameUno(cm)))
+												 				else
+												 					maxVehiculosX(sinUno(cc), c, n)
+												 				fi
+													 		fi
+															
+		cabinasConXVehiculosY(p, cc, v, n) ≡ if Ø?(cc) then
+																					Ø
+																				 else
+																					if (#(v, historialCola(p, dameUno(cc))) = n) then
+																						Ag(dameUno(cc), cabinasConXVehiculosY(p, sinUno(cc), v, n))
+																					else
+																						cabinasConXVehiculosY(p, sinUno(cc), v, n)
+																					fi 
+																				fi
+		
+		mitadFinal(cola) ≡ reducir(cola, 0, tamaño(cola))
+		reducir(cola, i, fin) ≡ if i < fin then
+															reducir(desencolar(cola), i+1, fin-1)
+														else
+															cola
+														fi
+		
+		 
+Fin TAD

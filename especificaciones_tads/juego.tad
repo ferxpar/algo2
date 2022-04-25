@@ -1,0 +1,28 @@
+TAD Juego
+	Géneros: juego
+	Exporta: juego, observadores, generadores, 
+	Usa: Bool, Nat
+	
+	Igualdad Observacional:();
+	Observadores Básicos:
+		mapa: juego -> mapa
+		jugador: juego -> jugador
+		
+		//con unicamente esto, era mas facil 
+		//juego ES tupla<mapa, jugador>
+		
+	Generadores:
+		crearJuego:	mapa	-> juego
+		moverJugador: juego × direccion dir -> juego
+		 
+	Otras Operaciones:
+		render: juego -> bool
+		
+	Axiomas:
+		mapa(crearJuego(m)) ≡ m
+		mapa(moverJugador(j,dir)) ≡ m
+		jugador(crearJuego(m)) ≡ crearJugador(m)
+		jugador(moverJugador(j,dir)) ≡ moverJugador(jugador(j), dir)
+		
+		//render(j) ≡ render(mapa(j)) ∧ render(jugador(j))
+Fin TAD

@@ -1,0 +1,40 @@
+TAD Batalla
+	Igualdad Observacional:();
+	Géneros: batalla
+	Exporta: batalla, observadores, generadores, 
+	Usa: Bool, Nat
+	
+	Observadores Básicos:
+		jugador1: batalla -> jugador
+		jugador2: batalla -> jugador
+		
+		jugadorDeTurno: batalla -> jugador 
+		
+	Generadores:
+
+		crearBatalla:	jugador j1 × jugador j2	-> batalla
+		accion: batalla b -> batalla
+		
+		
+	Otras Operaciones:
+		otra:	nombreTad t × nat n	-> bool 	{ n ≥ 1 }
+	Axiomas:
+		obs?(nil)	= 	true
+		otra(t, n)	= 	n
+		...
+		
+		jugador1(crearBatalla(j1,j2)) ≡ j1
+		jugador1(accion(b)) ≡ jugador1(b)
+		
+		jugador2(crearBatalla(j1,j2)) ≡ j2
+		jugador2(accion(b)) ≡ jugador2(b)
+		
+		jugadorDeTurno(crearBatalla(j1,j2)) ≡ j1
+		jugadorDeTurno(accion(b)) ≡ if jugadorDeTurno(b) = jugador1(b) then
+			resultado
+		else
+			sino
+		fi 
+		
+		 
+Fin TAD

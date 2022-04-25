@@ -1,0 +1,36 @@
+f ∈ Θ(g) ⇒ g ∈ Θ(f)
+
+hip: f ∈ Θ(g), es decir, f ∈ (Ω(g) ∩ O(g))
+qvq: g ∈ Θ(f), es decir, g ∈ (Ω(f) ∩ O(f))
+
+g ∈ Ω(f):
+
+Ω
+	f ∈ Ω(g) ⇒ Ω(f) ⊆ Ω(g) 
+
+	pues la cota inferior mas justa de f es f. 
+	si f tambien pertenece a la familia de cotas inferiores de g, 
+	estas cotas tienen un orden mayor al de Ω(f).
+	Es decir, Ω(g) son cotas mas "justas"
+
+	como Ω(f) ⊆ Ω(g), es claro que g ∈ Ω(f), pues se trata de una cota mas "debil"
+
+g ∈ O(f):
+
+	f ∈ O(g) ⇒ O(f) ⊆ O(g)
+	
+	si f pertenece a la familia de cotas superiores de f, las cotas de f estan ⊆ O(g)
+	estas son cotas O(g) mas "iguales o mas altas". 
+	o(g) tienen un orden mayor o igual al de f
+
+	 
+--------------------------------------------------------------------------------
+
+Θ(f) = Θ(g) ⇐⇒ f ∈ Θ(g)
+	
+⇒) f ∈ Θ(f) ∧ Θ(f) ⊆ Θ(g) ⇒ f ∈ Θ(g)
+
+⇐) f ∈ Θ(f) ∧ f ∈ Θ(g) ⇒ Θ(f) = Θ(g) por definicion de O y Ω, llegamos a que
+    si una funcion pertenece a dos Θ, estos Θ son el mismo.
+		
+		{k₀ * g(n) ≤ f(n) ≤ k₁ * g(n)   (∀n ≥ n₀)} 

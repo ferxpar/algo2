@@ -1,0 +1,102 @@
+TAD Persona es String
+
+personas estudian en un nivel 1-10
+personas ingresantes obtienen un tutor
+tutor = maestro, o alumno con nivel mayor
+se convierte en aprendiz
+un tutor debe poder conocer a sus aprendices
+El tutor puede avanzar su aprendiz de nivel. Si este lo alcanza en nivel, se busca otro tutor para el aprendiz (automaticamente)
+si el aprendiz llega a nivel 11, no se le asigna tutor. Y pasa a ser parte del grupo de los maestros
+
+Se puede desertar el CCC
+Si esa persona o tenia aprendices, el tutor de estos pasa a ser el tutor de p 
+Si esa persona era un maestro. Sus aprendinces pasan a otro maestro.
+El ccc no puede quedarse sin maestros
+Una persona que se va no puede volver.
+
+TAD CCC
+	Igualdad Observacional:();
+	Géneros: ccc
+	Exporta: ccc, observadores, generadores, 
+	Usa: Bool, Nat
+	
+	Observadores Básicos:
+		maestros: ccc -> conj(persona)
+		alumnos: ccc -> conj(persona)
+		//es claro que si una persona pertenece a alumnos, no pertence a maestros. Son conjuntos disjuntos
+		nivel: ccc c × persona p -> nat														{p ∈ alumnos(c)}
+		tutor: ccc c × persona p -> persona												{p ∈ alumnos(c)}
+		
+		desertores: ccc c -> conj(persona)
+	Generadores:
+		iniciarCCC: conj(persona) cm -> ccc   										{¬Ø?(cm)}
+		ingresante: ccc c × persona p -> ccc											{p ∉ (alumnos(c) ∪ maestros(c))}
+		subirDeNivel: ccc c × persona p -> ccc  									{p ∈ alumnos(c)}
+		desertar: ccc c × persona p -> ccc												{p ∈ alumnos(c) ∨ (p ∈ maestros(c) ⇒L ¬Ø(maestros(c) - {p}))}
+	Otras Operaciones:
+		//aprendices: ccc c × persona tutor -> conj(persona)
+		dameTutorConNivelMayor: ccc c × nat nivel -> persona 			{0 < nivel < 11}
+		alumnosConNivelMayor: ccc c × nat nivel -> conj(persona)	{0 < nivel < 11}
+	Axiomas:
+		maestros(iniciarCCC(cm)) ≡ cm 
+		maestros(ingresante(c, p)) ≡ maestros(c)
+		maestros(subirDeNivel(c, p)) ≡ 	if nivel(c, p) + 1 > 10 then
+																			Ag(p, maestros(c))
+																	 	else
+																			maestros(c)
+																		fi
+		maestros(desertar(c, p)) ≡  if p ∈ maestros(c) then
+																	maestros(c) - {p}
+																else
+																	maestros(c)
+																fi
+																	
+		alumnos(iniciarCCC(cm)) ≡ Ø
+		alumnos(ingresante(c, p)) ≡ Ag(p, alumnos(c))
+		alumnos(subirDeNivel(c, p)) ≡ if nivel(c, p) + 1 > 10 then
+																		alumnos(c) - {p}
+																	else
+																		alumnos(c)
+																	fi
+		alumnos(desertar(c, p)) ≡ if p ∈ alumnos(c) then
+																alumnos(c) - {p}
+															else
+																alumnos(c)
+															fi
+																																
+		nivel(ingresante(c, p), p') ≡ if p = p' then
+																	 1
+																 else
+																	 nivel(p')
+																 fi
+		nivel(subirDeNivel(c, p), p') ≡ if p = p' then
+																			nivel(p) + 1
+																		else
+																			nivel(p')
+																		fi
+																		
+		
+		tutor(ingresante(c, p), p') ≡ if p = p' then
+																		dameTutorConNivelMayor(1)
+																	else
+																		tutor(p)
+																	fi
+		tutor(subirDeNivel(c, p), p') ≡ if p = p' then
+																			if nivel(tutor(p)) = nivel(p) + 1 then
+																				dameTutorConNivelMayor(nivel(p) + 1)
+																			else
+																				tutor(p)
+																			fi
+																		else
+																			tutor(p')
+																		fi
+																		
+		dameTutorConNivelMayor(c, n) ≡ dameUno(alumnosConNivelMayor(c, n) ∪ maestros(c))
+		alumnosConNivelMayor(iniciarCCC(cm), n) ≡ Ø
+		alumnosConNivelMayor(ingresante(c, p), n) ≡ alumnosConNivelMayor(c, n)
+		alumnosConNivelMayor(subirDeNivel(c, p), n) ≡ if nivel(c, p) + 1 > n then
+																										Ag(p, alumnosConNivelMayor(c, n))
+																									else
+																										alumnosConNivelMayor(c, n)
+																									fi
+Fin TAD

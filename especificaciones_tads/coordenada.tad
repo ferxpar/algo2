@@ -1,0 +1,17 @@
+TAD Coordenada(α₁, α₂)
+	
+	Extiende Tupla(α₁, α₂)
+	
+	...
+	
+	Otras Operaciones:
+		arriba:			tupla t	-> tupla
+		abajo:			tupla t	-> tupla
+		derecha:		tupla t	-> tupla
+		izquierda:	tupla t	-> tupla
+	Axiomas:
+		arriba(t) ≡ 	<π₁(t), π₂(t) - 1>
+		abajo(t) ≡ 		<π₁(t), π₂(t) + 1>
+		derecha(t) ≡ 	<π₁(t) + 1, π₂(t)>
+		izquierda(t) ≡ <π₁(t) - 1, π₂(t)>
+Fin TAD
